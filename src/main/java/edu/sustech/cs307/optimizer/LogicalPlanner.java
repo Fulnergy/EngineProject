@@ -1,4 +1,4 @@
-package edu.sustech.cs307.optimizer;
+    package edu.sustech.cs307.optimizer;
 
 import java.io.StringReader;
 import java.util.regex.Matcher;
@@ -15,11 +15,13 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.drop.Drop; 
 
 import edu.sustech.cs307.exception.ExceptionTypes;
 import edu.sustech.cs307.logicalOperator.*;
 import edu.sustech.cs307.system.DBManager;
 import edu.sustech.cs307.logicalOperator.ddl.CreateTableExecutor;
+import edu.sustech.cs307.logicalOperator.ddl.DropTableExecutor;
 import edu.sustech.cs307.logicalOperator.ddl.ExplainExecutor;
 import edu.sustech.cs307.logicalOperator.ddl.ShowDatabaseExecutor;
 import edu.sustech.cs307.exception.DBException;
@@ -52,13 +54,14 @@ public class LogicalPlanner {
             operator = handleInsert(dbManager, insertStmt);
         } else if (stmt instanceof Update updateStmt) {
             operator = handleUpdate(dbManager, updateStmt);
-        }else if (stmt instanceof Commit) {
+        } else if (stmt instanceof Commit) {
             dbManager.commitTransaction();
             return null;
-        }
-        //todo: add condition of handleDelete
-        // functional
-        else if (stmt instanceof CreateTable createTableStmt) {
+        } else if (stmt instanceof Drop dropStmt) {
+            DropTableExecutor dropTable = new DropTableExecutor(dropStmt, dbManager, sql);
+            dropTable.execute();
+            return null;
+        } else if (stmt instanceof CreateTable createTableStmt) {
             CreateTableExecutor createTable = new CreateTableExecutor(createTableStmt, dbManager, sql);
             createTable.execute();
             return null;

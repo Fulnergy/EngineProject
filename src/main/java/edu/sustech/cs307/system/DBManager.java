@@ -9,13 +9,12 @@ import edu.sustech.cs307.storage.BufferPool;
 import edu.sustech.cs307.storage.DiskManager;
 import edu.sustech.cs307.storage.replacer.ClockReplacer;
 import edu.sustech.cs307.storage.replacer.PageReplacer;
-import org.apache.commons.lang3.StringUtils;
 import org.pmw.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.function.IntFunction;
 
 public class DBManager {
@@ -78,19 +77,68 @@ public class DBManager {
      * names.
      * Each table name is displayed in a separate row within the ASCII borders.
      */
+    private static String getSeparator(int width) {
+        StringBuilder separator = new StringBuilder("|");
+        for(int i=0;i<width+2;i++)separator.append("-");
+        separator.append("|");
+        return separator.toString();
+    }
+
     public void showTables() {
-        throw new RuntimeException("Not implement");
-        //todo: complete show table
-        // | -- TABLE -- |
-        // | -- ${table} -- |
-        // | ----------- |
+        Set<String> tables = metaManager.getTableNames();
+        int width = 6;
+        for(String s:tables){
+            if(s.length()>width)width=s.length();
+        }
+        String separator = getSeparator(width);
+        Logger.info(separator);
+        StringBuilder rowTable = new StringBuilder("|");
+        for(int i=0;i<(width-4)/2;i++) rowTable.append(" ");
+        rowTable.append("tables");
+        for(int i=0;i<(width-3)/2;i++) rowTable.append(" ");
+        rowTable.append("|");
+        Logger.info(rowTable);
+        Logger.info(separator);
+        for(String s:tables){
+            StringBuilder sb = new StringBuilder("|");
+            for(int i=0;i<(width-s.length()+2)/2;i++) sb.append(" ");
+            sb.append(s);
+            for(int i=0;i<(width-s.length()+3)/2;i++) sb.append(" ");
+            sb.append("|");
+            Logger.info(sb);
+        }
+        Logger.info(separator);
     }
 
     public void descTable(String table_name) {
-        throw new RuntimeException("Not implemented yet");
-        //todo: complete describe table
-        // | -- TABLE Field -- | -- Column Type --|
-        // | --  ${table field} --| -- ${table type} --|
+        try {
+            TableMeta tableMeta = metaManager.getTable(table_name);
+            int fieldWidth = 5;
+            int typeWidth = 4;
+            for (ColumnMeta col : tableMeta.columns_list) {
+                if (col.name.length() > fieldWidth) fieldWidth = col.name.length();
+                String typeStr = col.type.name();
+                if (typeStr.length() > typeWidth) typeWidth = typeStr.length();
+            }
+
+            String format = "| %-" + fieldWidth + "s | %-" + typeWidth + "s |";
+            int totalWidth = fieldWidth + typeWidth + 7;
+            StringBuilder separatorBuilder = new StringBuilder("|");
+            for (int i = 0; i < totalWidth - 2; i++) separatorBuilder.append("-");
+            separatorBuilder.append("|");
+            String separator = separatorBuilder.toString();
+
+            Logger.info(separator);
+            Logger.info(String.format(format, "Field", "Type"));
+            Logger.info(separator);
+            for (ColumnMeta col : tableMeta.columns_list) {
+                String typeStr = col.type.name().toLowerCase();
+                Logger.info(String.format(format, col.name, typeStr));
+            }
+            Logger.info(separator);
+        } catch (DBException e) {
+            Logger.error(e.getMessage());
+        }
     }
 
     /**
@@ -127,8 +175,15 @@ public class DBManager {
      * @throws DBException If the table directory does not exist or encounters IO
      *                     errors during deletion
      */
-    public void dropTable(String table_name) throws DBException {
-        // todo: finish drop table method
+        public void dropTable(String table_name) throws DBException {
+        String data_file = String.format("%s/%s", table_name, "data");
+        recordManager.DeleteFile(data_file);
+        metaManager.dropTable(table_name);
+        String table_folder = String.format("%s/%s", diskManager.getCurrentDir(), table_name);
+        File folder = new File(table_folder);
+        if (folder.exists()) {
+            deleteDirectory(folder);
+        }
     }
 
     /**
