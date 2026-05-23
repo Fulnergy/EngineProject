@@ -33,7 +33,7 @@ public class UpdateOperator implements PhysicalOperator {
     public UpdateOperator(PhysicalOperator inputOperator, String tableName, UpdateSet updateSet,
                           Expression whereExpr) {
         if (!(inputOperator instanceof SeqScanOperator seqScanOperator)) {
-            throw new RuntimeException("The delete operator only accepts SeqScanOperator as input");
+            throw new RuntimeException("The update operator only accepts SeqScanOperator as input");
         }
         this.seqScanOperator = seqScanOperator;
         this.tableName = tableName;

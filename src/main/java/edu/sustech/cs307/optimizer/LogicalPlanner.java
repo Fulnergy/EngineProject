@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -52,6 +53,8 @@ public class LogicalPlanner {
             operator = handleSelect(dbManager, selectStmt);
         } else if (stmt instanceof Insert insertStmt) {
             operator = handleInsert(dbManager, insertStmt);
+        } else if (stmt instanceof Delete deleteStmt) {
+            operator = handleDelete(dbManager, deleteStmt);
         } else if (stmt instanceof Update updateStmt) {
             operator = handleUpdate(dbManager, updateStmt);
         } else if (stmt instanceof Commit) {
@@ -117,6 +120,14 @@ public class LogicalPlanner {
         return new LogicalUpdateOperator(root, updateStmt.getTable().getName(), updateStmt.getUpdateSets(),
                 updateStmt.getWhere());
     }
+
+    private static LogicalOperator handleDelete(DBManager dbManager, Delete deleteStmt) throws DBException {
+        LogicalOperator root = new LogicalTableScanOperator(deleteStmt.getTable().getName(), dbManager);
+        return new LogicalDeleteOperator(root, deleteStmt.getTable().getName(),
+                java.util.Collections.emptyList(), deleteStmt.getWhere());
+    }
+
+
     private static String normalizeSql(String sql) {
         String normalizedSql = sql == null ? "" : sql.trim();
         while (normalizedSql.endsWith(";")) {
@@ -133,6 +144,5 @@ public class LogicalPlanner {
         }
         return false;
     }
-
 
 }

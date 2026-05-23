@@ -36,9 +36,9 @@ public class PhysicalPlanner {
             return handleInsert(dbManager, insertOperator);
         } else if (logicalOp instanceof LogicalUpdateOperator updateOperator) {
             return handleUpdate(dbManager, updateOperator);
-        }
-
-        else {
+        } else if (logicalOp instanceof LogicalDeleteOperator deleteOperator) {
+            return handleDelete(dbManager, deleteOperator);
+        } else {
             throw new DBException(ExceptionTypes.UnsupportedOperator(logicalOp.getClass().getSimpleName()));
         }
     }
@@ -152,6 +152,12 @@ public class PhysicalPlanner {
 
         return new InsertOperator(logicalInsertOp.tableName, columns,
                 values, dbManager);
+    }
+
+    private static PhysicalOperator handleDelete(DBManager dbManager, LogicalDeleteOperator logicalDeleteOp)
+            throws DBException {
+        PhysicalOperator childOp = generateOperator(dbManager, logicalDeleteOp.getChild());
+        return new DeleteOperator(childOp, logicalDeleteOp.getExpression());
     }
 
     @SuppressWarnings("deprecation")
