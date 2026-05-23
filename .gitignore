@@ -28,4 +28,10 @@ bin/
 ### Mac OS ###
 .DS_Store
 .idea/
+
+### Compiled files ###
+*.class
+
+### Database data ###
+CS307-DB/
 .CS307-DB/
