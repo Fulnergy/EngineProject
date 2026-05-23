@@ -1,10 +1,13 @@
-    package edu.sustech.cs307.optimizer;
+package edu.sustech.cs307.optimizer;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.JSqlParser;
 import net.sf.jsqlparser.statement.Commit;
@@ -82,8 +85,16 @@ public class LogicalPlanner {
         return operator;
     }
 
+    private static boolean isCountQuery(PlainSelect plainSelect) {
+        List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
+        if (selectItems == null || selectItems.size() != 1) return false;
+        var expr = selectItems.get(0).getExpression();
+        return expr instanceof Function
+                && ((Function) expr).getName().equalsIgnoreCase("COUNT");
+    }
 
-    public static LogicalOperator handleSelect(DBManager dbManager, Select selectStmt) throws DBException {
+    private static LogicalOperator handleSelect(DBManager dbManager, Select selectStmt)
+        throws DBException{
         PlainSelect plainSelect = selectStmt.getPlainSelect();
         if (plainSelect.getFromItem() == null) {
             throw new DBException(ExceptionTypes.UnsupportedCommand((plainSelect.toString())));
@@ -106,7 +117,14 @@ public class LogicalPlanner {
         if (plainSelect.getWhere() != null) {
             root = new LogicalFilterOperator(root, plainSelect.getWhere());
         }
-        root = new LogicalProjectOperator(root, plainSelect.getSelectItems());
+
+        // 检测是否包含 COUNT 等聚合函数
+        if (isCountQuery(plainSelect)) {
+            Function function = (Function) plainSelect.getSelectItems().get(0).getExpression();
+            root = new LogicalAggregateOperator(root, function);
+        } else {
+            root = new LogicalProjectOperator(root, plainSelect.getSelectItems());
+        }
         return root;
     }
 
