@@ -36,9 +36,11 @@ public class PhysicalPlanner {
             return handleInsert(dbManager, insertOperator);
         } else if (logicalOp instanceof LogicalUpdateOperator updateOperator) {
             return handleUpdate(dbManager, updateOperator);
-        }
-
-        else {
+        } else if (logicalOp instanceof LogicalDeleteOperator deleteOperator) {
+            return handleDelete(dbManager, deleteOperator);
+        } else if (logicalOp instanceof LogicalAggregateOperator aggregateOperator) {
+            return handleAggregate(dbManager, aggregateOperator);
+        } else{
             throw new DBException(ExceptionTypes.UnsupportedOperator(logicalOp.getClass().getSimpleName()));
         }
     }
@@ -156,6 +158,12 @@ public class PhysicalPlanner {
                 values, dbManager);
     }
 
+    private static PhysicalOperator handleDelete(DBManager dbManager, LogicalDeleteOperator logicalDeleteOp)
+            throws DBException {
+        PhysicalOperator childOp = generateOperator(dbManager, logicalDeleteOp.getChild());
+        return new DeleteOperator(childOp, logicalDeleteOp.getExpression());
+    }
+
     @SuppressWarnings("deprecation")
     private static void parseValue(List<Value> values, ExpressionList<?> valuesList, TableMeta tableMeta)
             throws DBException {
@@ -196,5 +204,12 @@ public class PhysicalPlanner {
             throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported expression list"));
         }
         return new UpdateOperator(scanner, logicalUpdateOp.getTableName(), logicalUpdateOp.getColumns().get(0), logicalUpdateOp.getExpression());
+    }
+
+    private static PhysicalOperator handleAggregate(DBManager dbManager, LogicalAggregateOperator logicalAggOp)
+            throws DBException {
+        PhysicalOperator childOp = generateOperator(dbManager, logicalAggOp.getChild());
+        return new AggregateOperator(childOp, logicalAggOp.getAggregateFunction(),
+                logicalAggOp.getOutputColumnName());
     }
 }

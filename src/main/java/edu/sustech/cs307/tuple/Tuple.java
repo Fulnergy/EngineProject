@@ -23,11 +23,13 @@ public abstract class Tuple {
     }
 
     private boolean evaluateCondition(Tuple tuple, Expression whereExpr) {
-        //todo: add Or condition
         if (whereExpr instanceof AndExpression andExpr) {
             // Recursively evaluate left and right expressions
             return evaluateCondition(tuple, andExpr.getLeftExpression())
                     && evaluateCondition(tuple, andExpr.getRightExpression());
+        } else if (whereExpr instanceof OrExpression orExpr) {
+            return evaluateCondition(tuple, orExpr.getLeftExpression())
+                    || evaluateCondition(tuple, orExpr.getRightExpression());
         } else if (whereExpr instanceof BinaryExpression binaryExpression) {
             return evaluateBinaryExpression(tuple, binaryExpression);
         } else {
@@ -77,8 +79,15 @@ public abstract class Tuple {
             int comparisonResult = ValueComparer.compare(leftValue, rightValue);
             if (operator.equals("=")) {
                 return comparisonResult == 0;
+            } else if (operator.equals(">")) {
+                return comparisonResult > 0;
+            } else if (operator.equals("<")) {
+                return comparisonResult < 0;
+            } else if (operator.equals(">=")) {
+                return comparisonResult >= 0;
+            } else if (operator.equals("<=")) {
+                return comparisonResult <= 0;
             }
-            // todo: finish condition > < >= <=
 
         } catch (DBException e) {
             e.printStackTrace(); // Handle exception properly

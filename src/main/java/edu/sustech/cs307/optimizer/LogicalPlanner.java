@@ -1,6 +1,8 @@
 package edu.sustech.cs307.optimizer;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +20,7 @@ import edu.sustech.cs307.logicalOperator.ddl.ExplainExecutor;
 import edu.sustech.cs307.logicalOperator.ddl.ShowDatabaseExecutor;
 import edu.sustech.cs307.system.DBManager;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.JSqlParser;
 import net.sf.jsqlparser.statement.Commit;
@@ -26,10 +29,14 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.drop.Drop;
+
+import edu.sustech.cs307.logicalOperator.ddl.DropTableExecutor;
+import edu.sustech.cs307.logicalOperator.LogicalAggregateOperator;
+import edu.sustech.cs307.logicalOperator.LogicalDeleteOperator;
 
 public class LogicalPlanner {
     private static final Pattern BEGIN_PATTERN = Pattern.compile("(?i)^BEGIN(?:\\s+(?:WORK|TRANSACTION))?$");
@@ -68,15 +75,18 @@ public class LogicalPlanner {
             operator = handleSelect(dbManager, selectStmt);
         } else if (stmt instanceof Insert insertStmt) {
             operator = handleInsert(dbManager, insertStmt);
+        } else if (stmt instanceof Delete deleteStmt) {
+            operator = handleDelete(dbManager, deleteStmt);
         } else if (stmt instanceof Update updateStmt) {
             operator = handleUpdate(dbManager, updateStmt);
-        }else if (stmt instanceof Commit) {
+        } else if (stmt instanceof Commit) {
             dbManager.commitTransaction();
             return null;
-        }
-        //todo: add condition of handleDelete
-        // functional
-        else if (stmt instanceof CreateTable createTableStmt) {
+        } else if (stmt instanceof Drop dropStmt) {
+            DropTableExecutor dropTable = new DropTableExecutor(dropStmt, dbManager, sql);
+            dropTable.execute();
+            return null;
+        } else if (stmt instanceof CreateTable createTableStmt) {
             CreateTableExecutor createTable = new CreateTableExecutor(createTableStmt, dbManager, sql);
             createTable.execute();
             return null;
@@ -94,8 +104,16 @@ public class LogicalPlanner {
         return operator;
     }
 
+    private static boolean isCountQuery(PlainSelect plainSelect) {
+        List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
+        if (selectItems == null || selectItems.size() != 1) return false;
+        var expr = selectItems.get(0).getExpression();
+        return expr instanceof Function
+                && ((Function) expr).getName().equalsIgnoreCase("COUNT");
+    }
 
-    public static LogicalOperator handleSelect(DBManager dbManager, Select selectStmt) throws DBException {
+    private static LogicalOperator handleSelect(DBManager dbManager, Select selectStmt)
+        throws DBException{
         PlainSelect plainSelect = selectStmt.getPlainSelect();
         if (plainSelect.getFromItem() == null) {
             throw new DBException(ExceptionTypes.UnsupportedCommand((plainSelect.toString())));
@@ -118,7 +136,14 @@ public class LogicalPlanner {
         if (plainSelect.getWhere() != null) {
             root = new LogicalFilterOperator(root, plainSelect.getWhere());
         }
-        root = new LogicalProjectOperator(root, plainSelect.getSelectItems());
+
+        // 检测是否包含 COUNT 等聚合函数
+        if (isCountQuery(plainSelect)) {
+            Function function = (Function) plainSelect.getSelectItems().get(0).getExpression();
+            root = new LogicalAggregateOperator(root, function);
+        } else {
+            root = new LogicalProjectOperator(root, plainSelect.getSelectItems());
+        }
         return root;
     }
 
@@ -132,6 +157,14 @@ public class LogicalPlanner {
         return new LogicalUpdateOperator(root, updateStmt.getTable().getName(), updateStmt.getUpdateSets(),
                 updateStmt.getWhere());
     }
+
+    private static LogicalOperator handleDelete(DBManager dbManager, Delete deleteStmt) throws DBException {
+        LogicalOperator root = new LogicalTableScanOperator(deleteStmt.getTable().getName(), dbManager);
+        return new LogicalDeleteOperator(root, deleteStmt.getTable().getName(),
+                java.util.Collections.emptyList(), deleteStmt.getWhere());
+    }
+
+
     private static String normalizeSql(String sql) {
         String normalizedSql = sql == null ? "" : sql.trim();
         while (normalizedSql.endsWith(";")) {
@@ -198,6 +231,5 @@ public class LogicalPlanner {
         }
         return false;
     }
-
 
 }

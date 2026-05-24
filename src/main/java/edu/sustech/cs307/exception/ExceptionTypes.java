@@ -21,7 +21,10 @@ public enum ExceptionTypes {
     INSERT_COLUMN_NAME_NOT_MATCH,
     INSERT_COLUMN_TYPE_NOT_MATCH,
     GET_VALUE_FROM_TEMP_TUPLE,
-    NOT_SUPPORTED_OPERATION
+    NOT_SUPPORTED_OPERATION,
+    TRANSACTION_ALREADY_ACTIVE,
+    TRANSACTION_REQUIRED,
+    SAVEPOINT_DOES_NOT_EXIST
     ;
 
     private String error_result;
@@ -154,5 +157,23 @@ public enum ExceptionTypes {
                 String.format("Unsupported operation: %s", expression)
         );
         return NOT_SUPPORTED_OPERATION;
+    }
+
+    static public ExceptionTypes TransactionAlreadyActive() {
+        TRANSACTION_ALREADY_ACTIVE.SetErrorResult(
+                "Transaction is already active.");
+        return TRANSACTION_ALREADY_ACTIVE;
+    }
+
+    static public ExceptionTypes TransactionRequired() {
+        TRANSACTION_REQUIRED.SetErrorResult(
+                "SAVEPOINT/ROLLBACK TO SAVEPOINT must be used within a transaction.");
+        return TRANSACTION_REQUIRED;
+    }
+
+    static public ExceptionTypes SavepointDoesNotExist(String savepointName) {
+        SAVEPOINT_DOES_NOT_EXIST.SetErrorResult(
+                String.format("Savepoint does not exist: %s", savepointName));
+        return SAVEPOINT_DOES_NOT_EXIST;
     }
 }

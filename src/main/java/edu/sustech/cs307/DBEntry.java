@@ -74,8 +74,15 @@ public class DBEntry {
                     if (sql.equalsIgnoreCase("exit")) {
                         running = false;
                         continue;
-                    } else if (sql.equalsIgnoreCase("help")) {
+                                        } else if (sql.equalsIgnoreCase("help")) {
                         printHelp();
+                        continue;
+                    } else if (sql.equalsIgnoreCase("show tables")) {
+                        dbManager.showTables();
+                        continue;
+                    } else if (sql.toLowerCase().startsWith("describe ")) {
+                        String tableName = sql.substring(9).trim();
+                        dbManager.descTable(tableName);
                         continue;
                     }
                 } catch (Exception e) {
