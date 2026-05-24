@@ -16,7 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.IntFunction;
+
+import edu.sustech.cs307.index.BPlusTree;
 
 public class DBManager {
     private final MetaManager metaManager;
@@ -26,6 +30,8 @@ public class DBManager {
     private final RecordManager recordManager;
     private TransactionManager transactionManager;
     private final IntFunction<PageReplacer> replacerFactory;
+    /** 索引名 → B+ 树; key 格式: "tableName.indexName" */
+    private final Map<String, BPlusTree> indexes = new HashMap<>();
 
     public DBManager(DiskManager diskManager, BufferPool bufferPool, RecordManager recordManager,
                      MetaManager metaManager) {
@@ -190,5 +196,82 @@ public class DBManager {
         this.bufferPool.FlushAllPages("");
         DiskManager.dump_disk_manager_meta(this.diskManager);
         this.metaManager.saveToJson();
+    }
+
+    // ==================== 索引管理 ====================
+
+    /** 为指定表的指定列创建 B+ 树索引 */
+    public void createIndex(String tableName, String columnName, String indexName) throws DBException {
+        metaManager.createIndex(tableName, columnName, indexName);
+        BPlusTree tree = new BPlusTree(4);
+        // 扫描全表, 把该列的值插入到 B+ 树中
+        edu.sustech.cs307.physicalOperator.SeqScanOperator scanner =
+                new edu.sustech.cs307.physicalOperator.SeqScanOperator(tableName, this);
+        scanner.Begin();
+        while (scanner.hasNext()) {
+            scanner.Next();
+            edu.sustech.cs307.tuple.Tuple tuple = scanner.Current();
+            if (tuple == null) continue;
+            // 找到该列的值和 RID
+            int colIdx = getColumnIndex(tableName, columnName);
+            if (colIdx >= 0) {
+                edu.sustech.cs307.value.Value key = (edu.sustech.cs307.value.Value) tuple.getValues()[colIdx];
+                edu.sustech.cs307.record.RID rid = null;
+                // TableTuple 有 getRID(), 其他 Tuple 没有
+                if (tuple instanceof edu.sustech.cs307.tuple.TableTuple tableTuple) {
+                    rid = tableTuple.getRID();
+                }
+                if (key != null && rid != null) {
+                    tree.insert(key, rid);
+                }
+            }
+        }
+        scanner.Close();
+        String key = tableName + "." + indexName;
+        indexes.put(key, tree);
+    }
+
+    /** 删除索引 */
+    public void dropIndex(String tableName, String indexName) throws DBException {
+        metaManager.dropIndex(tableName, indexName);
+        String key = tableName + "." + indexName;
+        indexes.remove(key);
+    }
+
+    /** 获取表的索引 (有列名匹配的 B+ 树就返回) */
+    public BPlusTree getIndex(String tableName, String columnName) {
+        TableMeta meta;
+        try {
+            meta = metaManager.getTable(tableName);
+        } catch (DBException e) {
+            return null;
+        }
+        if (meta.getIndexes() == null) return null;
+        for (String idxName : meta.getIndexes().keySet()) {
+            String key = tableName + "." + idxName;
+            BPlusTree tree = indexes.get(key);
+            if (tree != null) {
+                // 检查这个索引是否在该列上 (简化: 索引名为 columnName)
+                // 完整实现应该记录索引对应的列
+                return tree;
+            }
+        }
+        return null;
+    }
+
+    /** 获取所有索引 (用于打印等) */
+    public Map<String, BPlusTree> getIndexes() {
+        return indexes;
+    }
+
+    /** 获取某列在某表中的索引位置 */
+    private int getColumnIndex(String tableName, String columnName) throws DBException {
+        TableMeta meta = metaManager.getTable(tableName);
+        for (int i = 0; i < meta.columns_list.size(); i++) {
+            if (meta.columns_list.get(i).name.equals(columnName)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

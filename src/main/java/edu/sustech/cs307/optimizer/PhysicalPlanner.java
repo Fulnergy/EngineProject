@@ -53,13 +53,15 @@ public class PhysicalPlanner {
             return new SeqScanOperator(tableName, dbManager);
         }
 
-        // Check if index exists for the table (for now, assume RBTreeIndex always
-        // exists if index is defined)
+        // 如果该表有 B+ 树索引, 优先使用索引扫描
         if (tableMeta.getIndexes() != null && !tableMeta.getIndexes().isEmpty()) {
-            throw new RuntimeException("unimplement");
-        } else {
-            return new SeqScanOperator(tableName, dbManager);
+            String idxName = tableMeta.getIndexes().keySet().iterator().next();
+            edu.sustech.cs307.index.BPlusTree tree = dbManager.getIndexes().get(tableName + "." + idxName);
+            if (tree != null) {
+                return new edu.sustech.cs307.physicalOperator.BPlusTreeIndexScanOperator(tree, tableName, dbManager);
+            }
         }
+        return new SeqScanOperator(tableName, dbManager);
     }
 
     private static PhysicalOperator handleFilter(DBManager dbManager, LogicalFilterOperator logicalFilterOp)

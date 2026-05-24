@@ -1,12 +1,16 @@
 package edu.sustech.cs307.meta;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.sustech.cs307.exception.DBException;
 import edu.sustech.cs307.exception.ExceptionTypes;
@@ -37,7 +41,34 @@ public class MetaManager {
     }
 
     public void dropTable(String tableName) throws DBException {
-        // todo: finish drop table of meta data
+        if (!tables.containsKey(tableName)) {
+            throw new DBException(ExceptionTypes.TableDoesNotExist(tableName));
+        }
+        tables.remove(tableName);
+        saveToJson();
+    }
+
+    /** 为表创建索引 (记录到元数据中) */
+    public void createIndex(String tableName, String columnName, String indexName) throws DBException {
+        TableMeta table = getTable(tableName);
+        if (!table.hasColumn(columnName)) {
+            throw new DBException(ExceptionTypes.ColumnDoesNotExist(columnName));
+        }
+        if (table.getIndexes() == null) {
+            table.setIndexes(new java.util.HashMap<>());
+        }
+        table.getIndexes().put(indexName, TableMeta.IndexType.BTREE);
+        saveToJson();
+    }
+
+    /** 删除索引 (从元数据中移除) */
+    public void dropIndex(String tableName, String indexName) throws DBException {
+        TableMeta table = getTable(tableName);
+        if (table.getIndexes() == null || !table.getIndexes().containsKey(indexName)) {
+            return; // 索引不存在, 不报错 (idempotent)
+        }
+        table.getIndexes().remove(indexName);
+        saveToJson();
     }
 
     public void addColumnInTable(String tableName, ColumnMeta column) throws DBException {
