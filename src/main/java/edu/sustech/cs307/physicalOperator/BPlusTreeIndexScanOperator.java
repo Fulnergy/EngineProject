@@ -4,7 +4,9 @@ import edu.sustech.cs307.exception.DBException;
 import edu.sustech.cs307.index.BPlusTree;
 import edu.sustech.cs307.meta.ColumnMeta;
 import edu.sustech.cs307.meta.TableMeta;
-import edu.sustech.cs307.record.*;
+import edu.sustech.cs307.record.RID;
+import edu.sustech.cs307.record.Record;
+import edu.sustech.cs307.record.RecordFileHandle;
 import edu.sustech.cs307.system.DBManager;
 import edu.sustech.cs307.tuple.TableTuple;
 import edu.sustech.cs307.tuple.Tuple;
@@ -35,7 +37,13 @@ public class BPlusTreeIndexScanOperator implements PhysicalOperator {
         this.index = index;
         this.tableName = tableName;
         this.dbManager = dbManager;
-        this.tableMeta = dbManager.getMetaManager().getTable(tableName);
+        TableMeta meta;
+        try {
+            meta = dbManager.getMetaManager().getTable(tableName);
+        } catch (DBException e) {
+            meta = null;
+        }
+        this.tableMeta = meta;
     }
 
     @Override

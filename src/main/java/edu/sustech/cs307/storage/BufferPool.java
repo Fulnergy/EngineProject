@@ -232,6 +232,18 @@ public class BufferPool {
         }
     }
 
+    /** 清空整个缓冲池 (事务回滚时使用, 不写回脏页, 直接丢弃缓存). */
+    public void ClearAll() {
+        pageMap.clear();
+        pages.clear();
+        freeList.clear();
+        for (int i = 0; i < poolSize; i++) {
+            Page page = new Page();
+            pages.add(page);
+            freeList.add(i);
+        }
+    }
+
     /**
      * 查找一个受害者页面以进行替换。
      * 

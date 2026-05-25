@@ -64,6 +64,10 @@ public class DiskManager {
         Path path = Path.of(String.format("%s/%s", DBEntry.DB_NAME, DISK_MANAGER_META));
         // write the meta file
         File META_FILE = new File(path.toString());
+        // 确保父目录存在（测试环境可能没有 CS307-DB 目录）
+        if (!META_FILE.getParentFile().exists()) {
+            META_FILE.getParentFile().mkdirs();
+        }
         try (Writer writer = new FileWriter(META_FILE)) {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(writer, filePages);

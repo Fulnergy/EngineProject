@@ -97,6 +97,12 @@ public class MetaManager {
         return this.tables.keySet();
     }
 
+    /** 从事务回滚中恢复: 清空内存中的表数据, 重新从磁盘 JSON 加载 */
+    public void reloadFromDisk() throws DBException {
+        tables.clear();
+        loadFromJson();
+    }
+
     public void saveToJson() throws DBException {
         // check the root directory exists
         if (!new File(ROOT_DIR).exists()) {
