@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: system.TransactionManagerTest
+Test set: demo.BPlusTreeDemoTest
 -------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.343 s - in system.TransactionManagerTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.8 s - in demo.BPlusTreeDemoTest
