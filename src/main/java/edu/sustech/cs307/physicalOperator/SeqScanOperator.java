@@ -108,7 +108,10 @@ public class SeqScanOperator implements PhysicalOperator {
         if (!isOpen || currentRecord == null) {
             return null;
         }
-        return new TableTuple(tableName, tableMeta, currentRecord, new RID(this.currentPageNum, this.currentSlotNum - 1));
+        if(currentSlotNum==0&&currentPageNum!=0){
+            return new TableTuple(tableName, tableMeta, currentRecord, new RID(currentPageNum-1, recordsPerPage-1));
+        }
+        return new TableTuple(tableName, tableMeta, currentRecord, new RID(currentPageNum, currentSlotNum-1));
     }
 
     @Override
