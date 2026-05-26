@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: value.ValueComparerTest
 -------------------------------------------------------------------------------
-Tests run: 25, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.047 s <<< FAILURE! - in value.ValueComparerTest
+Tests run: 25, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.051 s <<< FAILURE! - in value.ValueComparerTest
 value.ValueComparerTest.testFromByte(byte[], ValueType, Object)[3]  Time elapsed: 0.001 s  <<< ERROR!
 java.lang.StringIndexOutOfBoundsException: Range [4, 4 + 1952805748) out of bounds for length 4
 	at java.base/jdk.internal.util.Preconditions$1.apply(Preconditions.java:55)
@@ -68,7 +68,7 @@ java.lang.StringIndexOutOfBoundsException: Range [4, 4 + 1952805748) out of boun
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
 
-value.ValueComparerTest.testToByte(Object, ValueType, byte[])[3]  Time elapsed: 0.002 s  <<< FAILURE!
+value.ValueComparerTest.testToByte(Object, ValueType, byte[])[3]  Time elapsed: 0.001 s  <<< FAILURE!
 org.opentest4j.AssertionFailedError: 
 
 expected: [116, 101, 115, 116]

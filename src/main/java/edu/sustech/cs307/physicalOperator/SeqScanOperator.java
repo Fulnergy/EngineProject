@@ -27,6 +27,8 @@ public class SeqScanOperator implements PhysicalOperator {
     private int totalPages;
     private int recordsPerPage;
     private boolean isOpen = false;
+    /** 上一次 Next() 读取的 RID，用于 Current() 返回正确的 RID */
+    private RID currentRID;
 
     public SeqScanOperator(String tableName, DBManager dbManager) {
         this.tableName = tableName;
@@ -85,8 +87,8 @@ public class SeqScanOperator implements PhysicalOperator {
             return;
         try {
             if (hasNext()) { // Advance to the next record
-                RID rid = new RID(currentPageNum, currentSlotNum);
-                currentRecord = fileHandle.GetRecord(rid);
+                currentRID = new RID(currentPageNum, currentSlotNum);
+                currentRecord = fileHandle.GetRecord(currentRID);
                 currentSlotNum++;
                 if (currentSlotNum >= recordsPerPage) {
                     currentPageNum++;
@@ -96,10 +98,12 @@ public class SeqScanOperator implements PhysicalOperator {
                 fileHandle.UnpinPageHandle(currentPageNum, false);
             } else {
                 currentRecord = null;
+                currentRID = null;
             }
         } catch (DBException e) {
             e.printStackTrace(); // Handle exception properly
             currentRecord = null;
+            currentRID = null;
         }
     }
 

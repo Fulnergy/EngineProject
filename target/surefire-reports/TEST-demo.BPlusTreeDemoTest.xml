@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="record.RecordFileHandleTest$PersistenceTests" time="0.049" tests="2" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="demo.BPlusTreeDemoTest" time="2.8" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -58,6 +58,136 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="67.0"/>
   </properties>
-  <testcase name="autoFlushDirtyPages" classname="record.RecordFileHandleTest$PersistenceTests" time="0.034"/>
-  <testcase name="dataPersistsAcrossSessions" classname="record.RecordFileHandleTest$PersistenceTests" time="0.014"/>
+  <testcase name="demoWith100Rows" classname="demo.BPlusTreeDemoTest" time="2.787">
+    <system-out><![CDATA[=== 建表 + 插入 100 行 ===
+2026-05-25 18:10:45 [main] edu.sustech.cs307.logicalOperator.ddl.CreateTableExecutor.execute()
+INFO: Successfully created table: big
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+  -> 1 row(s)
+100 rows inserted.
+
+=== 无索引: explain ===
+2026-05-25 18:10:47 [main] edu.sustech.cs307.logicalOperator.ddl.ExplainExecutor.execute()
+INFO: ProjectOperator(selectItems=[*])
+└── LogicalFilterOperator(condition=big.score = 50)
+        └── TableScanOperator(table=big)
+Physical op: ProjectOperator
+
+=== CREATE INDEX ===
+Indexes in DBManager: [big.idx_score]
+
+=== 有索引: explain ===
+2026-05-25 18:10:47 [main] edu.sustech.cs307.logicalOperator.ddl.ExplainExecutor.execute()
+INFO: ProjectOperator(selectItems=[*])
+└── LogicalFilterOperator(condition=big.score = 50)
+        └── TableScanOperator(table=big)
+Physical op: ProjectOperator
+
+=== 范围查询 ===
+  -> 10 row(s)
+=== 第二个索引 ===
+Physics op (score): ProjectOperator
+Physics op (id): ProjectOperator
+
+=== ALL DONE ===
+]]></system-out>
+  </testcase>
 </testsuite>
