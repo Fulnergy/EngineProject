@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="record.RecordFileHandleTest$PageManagementTests" time="0.027" tests="2" errors="0" skipped="0" failures="1">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="record.RecordFileHandleTest$PageManagementTests" time="0.021" tests="2" errors="0" skipped="0" failures="1">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="C:\Users\24400\.jdks\openjdk-23.0.2\bin"/>
-    <property name="sun.java.command" value="C:\Users\24400\AppData\Local\Temp\surefire8705064240442217854\surefirebooter-20260525181044263_3.jar C:\Users\24400\AppData\Local\Temp\surefire8705064240442217854 2026-05-25T18-10-44_024-jvmRun1 surefire-20260525181044263_1tmp surefire_0-20260525181044263_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\24400\AppData\Local\Temp\surefire6329473007630886944\surefirebooter-20260528191224359_3.jar C:\Users\24400\AppData\Local\Temp\surefire6329473007630886944 2026-05-28T19-12-24_199-jvmRun1 surefire-20260528191224359_1tmp surefire_0-20260528191224359_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\24400\Desktop\proj2\target\test-classes;C:\Users\24400\Desktop\proj2\target\classes;C:\Users\24400\.m2\repository\com\github\jsqlparser\jsqlparser\5.1\jsqlparser-5.1.jar;C:\Users\24400\.m2\repository\io\netty\netty-buffer\4.1.117.Final\netty-buffer-4.1.117.Final.jar;C:\Users\24400\.m2\repository\io\netty\netty-common\4.1.117.Final\netty-common-4.1.117.Final.jar;C:\Users\24400\.m2\repository\org\tinylog\tinylog\1.3.6\tinylog-1.3.6.jar;C:\Users\24400\.m2\repository\org\apache\commons\commons-lang3\3.17.0\commons-lang3-3.17.0.jar;C:\Users\24400\.m2\repository\org\jline\jline\3.25.0\jline-3.25.0.jar;C:\Users\24400\.m2\repository\org\mockito\mockito-all\1.10.19\mockito-all-1.10.19.jar;C:\Users\24400\.m2\repository\org\mockito\mockito-junit-jupiter\5.12.0\mockito-junit-jupiter-5.12.0.jar;C:\Users\24400\.m2\repository\org\mockito\mockito-core\5.12.0\mockito-core-5.12.0.jar;C:\Users\24400\.m2\repository\net\bytebuddy\byte-buddy\1.14.15\byte-buddy-1.14.15.jar;C:\Users\24400\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.15\byte-buddy-agent-1.14.15.jar;C:\Users\24400\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\24400\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.11.4\junit-jupiter-api-5.11.4.jar;C:\Users\24400\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\24400\.m2\repository\org\junit\platform\junit-platform-commons\1.11.4\junit-platform-commons-1.11.4.jar;C:\Users\24400\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\24400\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.11.4\junit-jupiter-engine-5.11.4.jar;C:\Users\24400\.m2\repository\org\junit\platform\junit-platform-engine\1.11.4\junit-platform-engine-1.11.4.jar;C:\Users\24400\.m2\repository\org\junit\jupiter\junit-jupiter\5.11.4\junit-jupiter-5.11.4.jar;C:\Users\24400\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.11.4\junit-jupiter-params-5.11.4.jar;C:\Users\24400\.m2\repository\org\assertj\assertj-core\3.22.0\assertj-core-3.22.0.jar;C:\Users\24400\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.15.0\jackson-databind-2.15.0.jar;C:\Users\24400\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.15.0\jackson-annotations-2.15.0.jar;C:\Users\24400\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.15.0\jackson-core-2.15.0.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\24400\AppData\Local\Temp\surefire8705064240442217854\surefirebooter-20260525181044263_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\24400\AppData\Local\Temp\surefire6329473007630886944\surefirebooter-20260528191224359_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="23.0.2+7-58"/>
@@ -59,7 +59,7 @@
     <property name="java.class.version" value="67.0"/>
   </properties>
   <testcase name="reuseFreedPageSpace" classname="record.RecordFileHandleTest$PageManagementTests" time="0.004"/>
-  <testcase name="autoAllocateNewPageWhenFull" classname="record.RecordFileHandleTest$PageManagementTests" time="0.019">
+  <testcase name="autoAllocateNewPageWhenFull" classname="record.RecordFileHandleTest$PageManagementTests" time="0.015">
     <failure message="&#10;expected: 1&#10; but was: 2" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: 
 
 expected: 1

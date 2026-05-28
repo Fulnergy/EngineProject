@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: value.ValueComparerTest
 -------------------------------------------------------------------------------
-Tests run: 25, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.051 s <<< FAILURE! - in value.ValueComparerTest
+Tests run: 25, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.045 s <<< FAILURE! - in value.ValueComparerTest
 value.ValueComparerTest.testFromByte(byte[], ValueType, Object)[3]  Time elapsed: 0.001 s  <<< ERROR!
 java.lang.StringIndexOutOfBoundsException: Range [4, 4 + 1952805748) out of bounds for length 4
 	at java.base/jdk.internal.util.Preconditions$1.apply(Preconditions.java:55)
