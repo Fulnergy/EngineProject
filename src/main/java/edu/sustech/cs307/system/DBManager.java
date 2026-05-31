@@ -1,16 +1,5 @@
 package edu.sustech.cs307.system;
 
-import edu.sustech.cs307.exception.DBException;
-import edu.sustech.cs307.exception.ExceptionTypes;
-import edu.sustech.cs307.meta.ColumnMeta;
-import edu.sustech.cs307.meta.MetaManager;
-import edu.sustech.cs307.meta.TableMeta;
-import edu.sustech.cs307.storage.BufferPool;
-import edu.sustech.cs307.storage.DiskManager;
-import edu.sustech.cs307.storage.replacer.ClockReplacer;
-import edu.sustech.cs307.storage.replacer.PageReplacer;
-import org.pmw.tinylog.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +8,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.IntFunction;
 
+import org.pmw.tinylog.Logger;
+
+import edu.sustech.cs307.exception.DBException;
+import edu.sustech.cs307.exception.ExceptionTypes;
 import edu.sustech.cs307.index.BPlusTree;
+import edu.sustech.cs307.meta.ColumnMeta;
+import edu.sustech.cs307.meta.MetaManager;
+import edu.sustech.cs307.meta.TableMeta;
+import edu.sustech.cs307.storage.BufferPool;
+import edu.sustech.cs307.storage.DiskManager;
+import edu.sustech.cs307.storage.replacer.ClockReplacer;
+import edu.sustech.cs307.storage.replacer.PageReplacer;
 
 public class DBManager {
     private final MetaManager metaManager;
@@ -310,7 +310,7 @@ public class DBManager {
         scanner.Close();
         String key = tableName + "." + indexName;
         indexes.put(key, tree);
-        // == Task 3 要求: 打印 B+ 树每个节点 ==
+        // == 打印 B+ 树每个节点 ==
         org.pmw.tinylog.Logger.info("Index '" + indexName + "' created on " + tableName + "(" + columnName + ")");
         org.pmw.tinylog.Logger.info("\n" + tree.printTree());
     }
