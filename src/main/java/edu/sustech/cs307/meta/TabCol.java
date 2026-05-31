@@ -22,13 +22,16 @@ public class TabCol {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         TabCol tabCol = (TabCol) obj;
-        return tableName.equals(tabCol.tableName) && columnName.equals(tabCol.columnName);
+        if (!columnName.equals(tabCol.columnName)) return false;
+        // null table name acts as wildcard
+        if (tableName == null || tabCol.tableName == null) return true;
+        return tableName.equals(tabCol.tableName);
     }
 
     @Override
     public int hashCode() {
-        int result = tableName.hashCode();
-        result = 31 * result + columnName.hashCode();
+        int result = columnName.hashCode();
+        result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
 }

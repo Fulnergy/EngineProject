@@ -51,29 +51,29 @@ public class LogicalAggregateOperator extends LogicalOperator {
         String functionName = function.getName().toUpperCase();
         this.aggregateFunction = functionName;
 
-        if (!"COUNT".equals(functionName)) {
+        if (!"COUNT".equals(functionName) && !"MAX".equals(functionName) && !"MIN".equals(functionName)) {
             throw new DBException(ExceptionTypes.UnsupportedCommand(
                     "Aggregate function: " + functionName));
         }
 
         boolean star = false;
         String colName = null;
-        String outName = "count";
+        String outName = functionName.toLowerCase();
 
         var params = function.getParameters();
         if (params != null && !params.getExpressions().isEmpty()) {
             Expression paramExpr = params.getExpressions().get(0);
             if (paramExpr instanceof AllColumns) {
                 star = true;
-                outName = "count(*)";
+                outName = functionName.toLowerCase() + "(*)";
             } else if (paramExpr instanceof Column col) {
                 star = false;
                 colName = col.getColumnName();
-                outName = "count(" + colName + ")";
+                outName = functionName.toLowerCase() + "(" + colName + ")";
             }
         } else {
             star = true;
-            outName = "count(*)";
+            outName = functionName.toLowerCase() + "(*)";
         }
 
         this.isStar = star;
@@ -114,30 +114,29 @@ public class LogicalAggregateOperator extends LogicalOperator {
             throws DBException {
         String functionName = function.getName().toUpperCase();
 
-        // 未来扩展：校验支持的函数名
-        if (!"COUNT".equals(functionName)) {
+        if (!"COUNT".equals(functionName) && !"MAX".equals(functionName) && !"MIN".equals(functionName)) {
             throw new DBException(ExceptionTypes.UnsupportedCommand(
                     "Aggregate function: " + functionName));
         }
 
         boolean isStar = false;
         String aggregateColumnName = null;
-        String outputColumnName = "count";
+        String outputColumnName = functionName.toLowerCase();
 
         var params = function.getParameters();
         if (params != null && !params.getExpressions().isEmpty()) {
             Expression paramExpr = params.getExpressions().get(0);
             if (paramExpr instanceof AllColumns) {
                 isStar = true;
-                outputColumnName = "count(*)";
+                outputColumnName = functionName.toLowerCase() + "(*)";
             } else if (paramExpr instanceof Column col) {
                 isStar = false;
                 aggregateColumnName = col.getColumnName();
-                outputColumnName = "count(" + aggregateColumnName + ")";
+                outputColumnName = functionName.toLowerCase() + "(" + aggregateColumnName + ")";
             }
         } else {
             isStar = true;
-            outputColumnName = "count(*)";
+            outputColumnName = functionName.toLowerCase() + "(*)";
         }
 
         return new LogicalAggregateOperator(child, functionName, isStar,

@@ -9,9 +9,20 @@ import edu.sustech.cs307.value.ValueType;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public abstract class Tuple {
+    /** 用于执行 EXISTS 子查询，由 DBEntry 初始化时设置 */
+    protected static edu.sustech.cs307.system.DBManager dbManager;
+
+    public static void setDBManager(edu.sustech.cs307.system.DBManager dbm) {
+        dbManager = dbm;
+    }
+
     public abstract Value getValue(TabCol tabCol) throws DBException;
 
     public abstract TabCol[] getTupleSchema();
@@ -32,6 +43,10 @@ public abstract class Tuple {
                     || evaluateCondition(tuple, orExpr.getRightExpression());
         } else if (whereExpr instanceof BinaryExpression binaryExpression) {
             return evaluateBinaryExpression(tuple, binaryExpression);
+        } else if (whereExpr instanceof InExpression inExpr) {
+            return evaluateInExpression(tuple, inExpr);
+        } else if (whereExpr instanceof ExistsExpression existsExpr) {
+            return evaluateExistsExpression(tuple, existsExpr);
         } else {
             return true; // For non-binary and non-AND expressions, just return true for now
         }
@@ -119,6 +134,73 @@ public abstract class Tuple {
         } else {
             throw new DBException(ExceptionTypes.UnsupportedExpression(expr));
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean evaluateInExpression(Tuple tuple, InExpression inExpr) {
+        try {
+            Value leftValue = resolveExpressionValue(tuple, inExpr.getLeftExpression());
+            if (leftValue == null) return inExpr.isNot();
+
+            Expression rightExpr = inExpr.getRightExpression();
+            if (rightExpr instanceof ExpressionList) {
+                ExpressionList<?> exprList = (ExpressionList<?>) rightExpr;
+                for (Object obj : exprList.getExpressions()) {
+                    Expression item = (Expression) obj;
+                    Value itemValue = getConstantValue(item);
+                    if (itemValue != null && ValueComparer.compare(leftValue, itemValue) == 0) {
+                        return !inExpr.isNot(); // found → IN=true, NOT IN=false
+                    }
+                }
+                return inExpr.isNot(); // not found → IN=false, NOT IN=true
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean evaluateExistsExpression(Tuple tuple, ExistsExpression existsExpr) {
+        if (dbManager == null) return false;
+        try {
+            Expression subExpr = existsExpr.getRightExpression();
+            String subSql = subExpr.toString().trim();
+            // 去掉外层括号 (SubSelect/ParenthesedSelect 的 toString 会带括号)
+            if (subSql.startsWith("(") && subSql.endsWith(")")) {
+                subSql = subSql.substring(1, subSql.length() - 1).trim();
+            }
+            edu.sustech.cs307.logicalOperator.LogicalOperator subLogical =
+                    edu.sustech.cs307.optimizer.LogicalPlanner.resolveAndPlan(dbManager, subSql);
+            if (subLogical == null) return false;
+
+            edu.sustech.cs307.physicalOperator.PhysicalOperator subPhysical =
+                    edu.sustech.cs307.optimizer.PhysicalPlanner.generateOperator(dbManager, subLogical);
+            if (subPhysical == null) return false;
+
+            subPhysical.Begin();
+            boolean hasRow = subPhysical.hasNext();
+            subPhysical.Close();
+
+            return hasRow;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** 解析表达式值：列引用→从tuple取值，常量→转为Value */
+    private Value resolveExpressionValue(Tuple tuple, Expression expr) throws DBException {
+        if (expr instanceof Column col) {
+            String tableName = col.getTableName();
+            if (tuple instanceof TableTuple tableTuple) {
+                tableName = tableTuple.getTableName();
+            }
+            Value v = tuple.getValue(new TabCol(tableName, col.getColumnName()));
+            if (v != null && v.type == ValueType.CHAR) {
+                v = new Value(v.toString());
+            }
+            return v;
+        }
+        return getConstantValue(expr);
     }
 
 }

@@ -50,6 +50,7 @@ public class DBEntry {
             RecordManager recordManager = new RecordManager(diskManager, bufferPool);
             MetaManager metaManager = new MetaManager(DB_NAME + "/meta");
             dbManager = new DBManager(diskManager, bufferPool, recordManager, metaManager);
+            edu.sustech.cs307.tuple.Tuple.setDBManager(dbManager);
         } catch (DBException e) {
             Logger.error(e.getMessage());
             Logger.error("An error occurred during initializing. Exiting....");

@@ -85,6 +85,29 @@ public class MetaManager {
         this.tables.get(tableName).dropColumn((columnName));
     }
 
+    public void renameTable(String oldName, String newName) throws DBException {
+        if (!tables.containsKey(oldName)) {
+            throw new DBException(ExceptionTypes.TableDoesNotExist(oldName));
+        }
+        if (tables.containsKey(newName)) {
+            throw new DBException(ExceptionTypes.TableAlreadyExist(newName));
+        }
+        TableMeta table = tables.remove(oldName);
+        table.tableName = newName;
+        // 更新所有列的 tableName
+        for (ColumnMeta col : table.columns_list) {
+            col.tableName = newName;
+        }
+        tables.put(newName, table);
+        saveToJson();
+    }
+
+    public void renameColumn(String tableName, String oldColName, String newColName) throws DBException {
+        TableMeta table = getTable(tableName);
+        table.renameColumn(oldColName, newColName);
+        saveToJson();
+    }
+
     public TableMeta getTable(String tableName) throws DBException {
         if (tables.containsKey(tableName)) {
             return tables.get(tableName);

@@ -104,4 +104,29 @@ public class Value {
             default -> throw new RuntimeException("Unsupported value type: " + type);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Value other = (Value) obj;
+        if (type != other.type) return false;
+        if (value == null) return other.value == null;
+        // CHAR: trim whitespace for consistent comparison
+        if (type == ValueType.CHAR) {
+            String s1 = ((String) value).trim();
+            String s2 = ((String) other.value).trim();
+            return s1.equals(s2);
+        }
+        return value.equals(other.value);
+    }
+
+    @Override
+    public int hashCode() {
+        if (value == null) return 0;
+        if (type == ValueType.CHAR) {
+            return ((String) value).trim().hashCode();
+        }
+        return value.hashCode();
+    }
 }

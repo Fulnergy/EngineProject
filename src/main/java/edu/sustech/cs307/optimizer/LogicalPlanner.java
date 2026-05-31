@@ -37,6 +37,10 @@ import net.sf.jsqlparser.statement.drop.Drop;
 import edu.sustech.cs307.logicalOperator.ddl.DropTableExecutor;
 import edu.sustech.cs307.logicalOperator.LogicalAggregateOperator;
 import edu.sustech.cs307.logicalOperator.LogicalDeleteOperator;
+import edu.sustech.cs307.logicalOperator.LogicalOrderByOperator;
+import edu.sustech.cs307.meta.TabCol;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.expression.Expression;
 
 public class LogicalPlanner {
     private static final Pattern BEGIN_PATTERN = Pattern.compile("(?i)^BEGIN(?:\\s+(?:WORK|TRANSACTION))?$");
@@ -54,6 +58,12 @@ public class LogicalPlanner {
     // DROP INDEX idx_name
     private static final Pattern DROP_INDEX_PATTERN =
             Pattern.compile("(?i)^DROP\\s+INDEX\\s+(\\w+)$");
+    // ALTER TABLE t RENAME TO new_name
+    private static final Pattern ALTER_RENAME_TABLE_PATTERN =
+            Pattern.compile("(?i)^ALTER\\s+TABLE\\s+(\\w+)\\s+RENAME\\s+TO\\s+(\\w+)$");
+    // ALTER TABLE t RENAME COLUMN old_col TO new_col
+    private static final Pattern ALTER_RENAME_COLUMN_PATTERN =
+            Pattern.compile("(?i)^ALTER\\s+TABLE\\s+(\\w+)\\s+RENAME\\s+COLUMN\\s+(\\w+)\\s+TO\\s+(\\w+)$");
 
     public static LogicalOperator resolveAndPlan(DBManager dbManager, String sql) throws DBException {
         if (sql == null || sql.isBlank()) {
@@ -104,12 +114,15 @@ public class LogicalPlanner {
         return operator;
     }
 
-    private static boolean isCountQuery(PlainSelect plainSelect) {
+    private static boolean isAggregateQuery(PlainSelect plainSelect) {
         List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
         if (selectItems == null || selectItems.size() != 1) return false;
         var expr = selectItems.get(0).getExpression();
-        return expr instanceof Function
-                && ((Function) expr).getName().equalsIgnoreCase("COUNT");
+        if (expr instanceof Function func) {
+            String name = func.getName().toUpperCase();
+            return name.equals("COUNT") || name.equals("MAX") || name.equals("MIN");
+        }
+        return false;
     }
 
     private static LogicalOperator handleSelect(DBManager dbManager, Select selectStmt)
@@ -137,13 +150,38 @@ public class LogicalPlanner {
             root = new LogicalFilterOperator(root, plainSelect.getWhere());
         }
 
-        // 检测是否包含 COUNT 等聚合函数
-        if (isCountQuery(plainSelect)) {
+        // 检测是否包含聚合函数 (COUNT / MAX / MIN)
+        if (isAggregateQuery(plainSelect)) {
             Function function = (Function) plainSelect.getSelectItems().get(0).getExpression();
-            root = new LogicalAggregateOperator(root, function);
+            LogicalAggregateOperator aggOp = new LogicalAggregateOperator(root, function);
+
+            // 解析 GROUP BY 子句
+            if (plainSelect.getGroupBy() != null) {
+                List<TabCol> groupByCols = new ArrayList<>();
+                GroupByElement groupBy = plainSelect.getGroupBy();
+                for (Object obj : groupBy.getGroupByExpressions()) {
+                    Expression expr = (Expression) obj;
+                    if (expr instanceof Column col) {
+                        String tableName = col.getTableName() != null ? col.getTableName().toString() : null;
+                        groupByCols.add(new TabCol(tableName, col.getColumnName()));
+                    }
+                }
+                if (!groupByCols.isEmpty()) {
+                    aggOp = new LogicalAggregateOperator(root, aggOp.getAggregateFunction(),
+                            aggOp.isStar(), aggOp.getAggregateColumnName(),
+                            aggOp.getOutputColumnName(), groupByCols);
+                }
+            }
+            root = aggOp;
         } else {
             root = new LogicalProjectOperator(root, plainSelect.getSelectItems());
         }
+
+        // ORDER BY 子句
+        if (plainSelect.getOrderByElements() != null && !plainSelect.getOrderByElements().isEmpty()) {
+            root = new LogicalOrderByOperator(root, plainSelect.getOrderByElements());
+        }
+
         return root;
     }
 
@@ -227,6 +265,23 @@ public class LogicalPlanner {
                     }
                 } catch (DBException ignored) {}
             }
+            return true;
+        }
+        // ALTER TABLE t RENAME TO new_name
+        m = ALTER_RENAME_TABLE_PATTERN.matcher(normalizedSql);
+        if (m.matches()) {
+            String oldName = m.group(1);
+            String newName = m.group(2);
+            dbManager.renameTable(oldName, newName);
+            return true;
+        }
+        // ALTER TABLE t RENAME COLUMN old_col TO new_col
+        m = ALTER_RENAME_COLUMN_PATTERN.matcher(normalizedSql);
+        if (m.matches()) {
+            String tableName = m.group(1);
+            String oldCol = m.group(2);
+            String newCol = m.group(3);
+            dbManager.getMetaManager().renameColumn(tableName, oldCol, newCol);
             return true;
         }
         return false;

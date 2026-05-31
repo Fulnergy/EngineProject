@@ -193,6 +193,34 @@ public class DBManager {
     }
 
     /**
+     * 重命名表：更新元数据和磁盘目录名。
+     */
+    public void renameTable(String oldName, String newName) throws DBException {
+        // 刷新缓冲池中旧表的页面
+        bufferPool.FlushAllPages(String.format("%s/%s", oldName, "data"));
+        bufferPool.DeleteAllPages(String.format("%s/%s", oldName, "data"));
+        // 重命名磁盘目录
+        String oldDir = String.format("%s/%s", diskManager.getCurrentDir(), oldName);
+        String newDir = String.format("%s/%s", diskManager.getCurrentDir(), newName);
+        File oldFolder = new File(oldDir);
+        File newFolder = new File(newDir);
+        if (oldFolder.exists() && !newFolder.exists()) {
+            oldFolder.renameTo(newFolder);
+        }
+        // 更新 DiskManager 的文件页表
+        if (diskManager.filePages != null) {
+            String oldDataKey = String.format("%s/%s", oldName, "data");
+            String newDataKey = String.format("%s/%s", newName, "data");
+            Integer pages = diskManager.filePages.remove(oldDataKey);
+            if (pages != null) {
+                diskManager.filePages.put(newDataKey, pages);
+            }
+        }
+        // 更新元数据
+        metaManager.renameTable(oldName, newName);
+    }
+
+    /**
      * Recursively deletes a directory and all its contents.
      * If the given file is a directory, it first deletes all its entries
      * recursively.

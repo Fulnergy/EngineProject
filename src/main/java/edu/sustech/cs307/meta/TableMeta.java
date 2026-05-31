@@ -90,6 +90,25 @@ public class TableMeta {
         return this.columns.containsKey(columnName);
     }
 
+    public void renameColumn(String oldName, String newName) throws DBException {
+        if (!this.columns.containsKey(oldName)) {
+            throw new DBException(ExceptionTypes.ColumnDoesNotExist(oldName));
+        }
+        if (this.columns.containsKey(newName)) {
+            throw new DBException(ExceptionTypes.ColumnAlreadyExist(newName));
+        }
+        ColumnMeta col = this.columns.remove(oldName);
+        col.name = newName;
+        this.columns.put(newName, col);
+        // 同步更新 columns_list
+        for (ColumnMeta cm : this.columns_list) {
+            if (cm.name.equals(oldName)) {
+                cm.name = newName;
+                break;
+            }
+        }
+    }
+
     public Map<String, IndexType> getIndexes() {
         return indexes;
     }
