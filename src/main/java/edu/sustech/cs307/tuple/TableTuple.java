@@ -30,7 +30,7 @@ public class TableTuple extends Tuple {
 
     @Override
     public Value getValue(TabCol tabCol) throws DBException {
-        if (!tabCol.getTableName().equals(tableName)) {
+        if (tabCol.getTableName() != null && !tabCol.getTableName().equals(tableName)) {
             return null;
         }
         ColumnMeta columnMeta = tableMeta.getColumnMeta(tabCol.getColumnName());

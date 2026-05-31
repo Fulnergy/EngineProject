@@ -8,6 +8,7 @@ import edu.sustech.cs307.system.DBManager;
 import edu.sustech.cs307.value.Value;
 import edu.sustech.cs307.value.ValueType;
 import edu.sustech.cs307.meta.ColumnMeta;
+import edu.sustech.cs307.meta.TabCol;
 import edu.sustech.cs307.meta.TableMeta;
 
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -40,6 +41,8 @@ public class PhysicalPlanner {
             return handleDelete(dbManager, deleteOperator);
         } else if (logicalOp instanceof LogicalAggregateOperator aggregateOperator) {
             return handleAggregate(dbManager, aggregateOperator);
+        } else if (logicalOp instanceof LogicalOrderByOperator orderByOperator) {
+            return handleOrderBy(dbManager, orderByOperator);
         } else{
             throw new DBException(ExceptionTypes.UnsupportedOperator(logicalOp.getClass().getSimpleName()));
         }
@@ -79,9 +82,10 @@ public class PhysicalPlanner {
         PhysicalOperator joinOp = new NestedLoopJoinOperator(leftOp, rightOp, logicalJoinOp.getJoinExprs());
 
         Collection<Expression> joinFilters = logicalJoinOp.getJoinExprs();
-        PhysicalOperator finalOp = new FilterOperator(joinOp, joinFilters);
-
-        return finalOp;
+        if (joinFilters != null && !joinFilters.isEmpty()) {
+            joinOp = new FilterOperator(joinOp, joinFilters);
+        }
+        return joinOp;
     }
 
     private static PhysicalOperator handleProject(DBManager dbManager, LogicalProjectOperator logicalProjectOp)
@@ -210,6 +214,13 @@ public class PhysicalPlanner {
             throws DBException {
         PhysicalOperator childOp = generateOperator(dbManager, logicalAggOp.getChild());
         return new AggregateOperator(childOp, logicalAggOp.getAggregateFunction(),
-                logicalAggOp.getOutputColumnName());
+                logicalAggOp.getOutputColumnName(), logicalAggOp.getAggregateColumnName(),
+                logicalAggOp.isStar(), logicalAggOp.getGroupByColumns());
+    }
+
+    private static PhysicalOperator handleOrderBy(DBManager dbManager, LogicalOrderByOperator logicalOrderByOp)
+            throws DBException {
+        PhysicalOperator childOp = generateOperator(dbManager, logicalOrderByOp.getChild());
+        return new OrderByOperator(childOp, logicalOrderByOp);
     }
 }
