@@ -34,4 +34,11 @@ public class TabCol {
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return tableName != null
+                ? tableName + "." + columnName
+                : columnName;
+    }
 }

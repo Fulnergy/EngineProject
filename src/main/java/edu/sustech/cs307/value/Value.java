@@ -36,26 +36,27 @@ public class Value {
      * @throws RuntimeException 如果值的类型不受支持。
      */
     public byte[] ToByte() {
-        return switch (type) {
-            case INTEGER -> {
+        switch (type) {
+            case INTEGER: {
                 ByteBuffer buffer1 = ByteBuffer.allocate(8);
                 buffer1.putLong((long) value);
-                yield buffer1.array();
+                return buffer1.array();
             }
-            case FLOAT -> {
+            case FLOAT: {
                 ByteBuffer buffer2 = ByteBuffer.allocate(8);
                 buffer2.putDouble((double) value);
-                yield buffer2.array();
+                return buffer2.array();
             }
-            case CHAR -> {
+            case CHAR: {
                 String str = (String) value;
                 ByteBuffer buffer3 = ByteBuffer.allocate(64);
                 buffer3.putInt(str.length());
                 buffer3.put(str.getBytes());
-                yield buffer3.array();
+                return buffer3.array();
             }
-            default -> throw new RuntimeException("Unsupported value type: " + type);
-        };
+            default:
+                throw new RuntimeException("Unsupported value type: " + type);
+        }
     }
 
     /**
@@ -67,41 +68,42 @@ public class Value {
      * @throws RuntimeException 如果提供的值类型不受支持。
      */
     public static Value FromByte(byte[] bytes, ValueType type) {
-        return switch (type) {
-            case INTEGER -> {
+        switch (type) {
+            case INTEGER: {
                 ByteBuffer buffer1 = ByteBuffer.wrap(bytes);
-                yield new Value(buffer1.getLong());
+                return new Value(buffer1.getLong());
             }
-            case FLOAT -> {
+            case FLOAT: {
                 ByteBuffer buffer2 = ByteBuffer.wrap(bytes);
-                yield new Value(buffer2.getDouble());
+                return new Value(buffer2.getDouble());
             }
-            case CHAR -> {
+            case CHAR: {
                 ByteBuffer buffer3 = ByteBuffer.wrap(bytes);
                 var length = buffer3.getInt();
                 // int is 4 byte
                 String s = new String(bytes, 4, length);
-                yield new Value(s);
+                return new Value(s);
             }
-            default -> throw new RuntimeException("Unsupported value type: " + type);
-        };
-
+            default:
+                throw new RuntimeException("Unsupported value type: " + type);
+        }
     }
 
     @Override
     public String toString() {
         switch (type) {
-            case INTEGER, FLOAT ->{
+            case INTEGER:
+            case FLOAT:
                 return this.value.toString();
-            }
-            case CHAR -> {
+            case CHAR: {
                 byte[] bytes = ((String) this.value).getBytes();
                 ByteBuffer buffer3 = ByteBuffer.wrap(bytes);
                 var length = buffer3.getInt();
                 // int is 4 byte
                 return new String(bytes, 4, length);
             }
-            default -> throw new RuntimeException("Unsupported value type: " + type);
+            default:
+                throw new RuntimeException("Unsupported value type: " + type);
         }
     }
 
