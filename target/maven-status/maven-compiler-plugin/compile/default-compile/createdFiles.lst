@@ -10,4 +10,5 @@ edu\sustech\cs307\index\BPlusTree$ValueComparer.class
 edu\sustech\cs307\physicalOperator\AggregateOperator.class
 edu\sustech\cs307\logicalOperator\LogicalAggregateOperator.class
 edu\sustech\cs307\physicalOperator\DeleteOperator.class
+edu\sustech\cs307\InsertBigData.class
 edu\sustech\cs307\index\BPlusTree$LeafNode.class

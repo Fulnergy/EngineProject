@@ -267,12 +267,10 @@ public class DBManager {
             scanner.Next();
             edu.sustech.cs307.tuple.Tuple tuple = scanner.Current();
             if (tuple == null) continue;
-            // 找到该列的值和 RID
             int colIdx = getColumnIndex(tableName, columnName);
             if (colIdx >= 0) {
                 edu.sustech.cs307.value.Value key = (edu.sustech.cs307.value.Value) tuple.getValues()[colIdx];
                 edu.sustech.cs307.record.RID rid = null;
-                // TableTuple 有 getRID(), 其他 Tuple 没有
                 if (tuple instanceof edu.sustech.cs307.tuple.TableTuple tableTuple) {
                     rid = tableTuple.getRID();
                 }
@@ -284,6 +282,9 @@ public class DBManager {
         scanner.Close();
         String key = tableName + "." + indexName;
         indexes.put(key, tree);
+        // == Task 3 要求: 打印 B+ 树每个节点 ==
+        org.pmw.tinylog.Logger.info("Index '" + indexName + "' created on " + tableName + "(" + columnName + ")");
+        org.pmw.tinylog.Logger.info("\n" + tree.printTree());
     }
 
     /** 删除索引 */

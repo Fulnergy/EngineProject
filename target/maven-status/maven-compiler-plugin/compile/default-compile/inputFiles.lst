@@ -22,6 +22,7 @@ C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\DBEntry.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\tuple\TempTuple.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\physicalOperator\InMemoryIndexScanOperator.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\physicalOperator\DeleteOperator.java
+C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\InsertBigData.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\logicalOperator\ddl\CreateTableExecutor.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\record\RecordPageHeader.java
 C:\Users\24400\Desktop\proj2\src\main\java\edu\sustech\cs307\tuple\Tuple.java

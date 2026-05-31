@@ -86,8 +86,9 @@ public class DBEntry {
                         continue;
                     }
                 } catch (Exception e) {
-                    Logger.error(e.getMessage());
-                    Logger.error("An error occurred. Exiting....");
+                    Logger.error("Error reading input: " + e.getMessage());
+                    Logger.error("Please try again.");
+                    continue;
                 }
                 try {
                     LogicalOperator operator = LogicalPlanner.resolveAndPlan(dbManager, sql);
@@ -118,10 +119,13 @@ public class DBEntry {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            // persist the disk manager
-            dbManager.getBufferPool().FlushAllPages("");
-            Logger.error("Some error occurred. Exiting after persistdata...");
+            Logger.error("Unexpected error: " + e.getMessage());
+            Logger.error(Arrays.toString(e.getStackTrace()));
+            // persist data before exit
+            if (dbManager != null && dbManager.getBufferPool() != null) {
+                dbManager.getBufferPool().FlushAllPages("");
+            }
+            Logger.error("Exiting after persisting data...");
         }
     }
 
